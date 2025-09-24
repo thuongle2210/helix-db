@@ -42,11 +42,11 @@ impl<'a, I: Iterator<Item = Result<TraversalValue, GraphError>>> Iterator
 
                 let mut queue = VecDeque::with_capacity(32);
                 let mut visited = HashSet::with_capacity(64);
-                let mut parent: HashMap<u128, (u128, Edge)> = HashMap::with_capacity(32);
+                let mut parent: HashMap<u128, (u128, u128)> = HashMap::with_capacity(32);
                 queue.push_back(from);
                 visited.insert(from);
 
-                let reconstruct_path = |parent: &HashMap<u128, (u128, Edge)>,
+                let reconstruct_path = |parent: &HashMap<u128, (u128, u128)>,
                                         start_id: &u128,
                                         end_id: &u128|
                  -> Result<TraversalValue, GraphError> {
@@ -59,7 +59,7 @@ impl<'a, I: Iterator<Item = Result<TraversalValue, GraphError>>> Iterator
                         nodes.push(self.storage.get_node(self.txn, current)?);
 
                         let (prev_node, edge) = &parent[current];
-                        edges.push(edge.clone());
+                        edges.push(self.storage.get_edge(self.txn, edge)?);
                         current = prev_node;
                     }
 
@@ -93,8 +93,7 @@ impl<'a, I: Iterator<Item = Result<TraversalValue, GraphError>>> Iterator
 
                         if !visited.contains(&to_node) {
                             visited.insert(to_node);
-                            let edge = self.storage.get_edge(self.txn, &edge_id).unwrap(); // TODO: handle error
-                            parent.insert(to_node, (current_id, edge));
+                            parent.insert(to_node, (current_id, edge_id));
 
                             if to_node == to {
                                 return Some(reconstruct_path(&parent, &from, &to));
