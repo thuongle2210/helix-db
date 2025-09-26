@@ -4,7 +4,7 @@ use crate::{
         storage_core::{HelixGraphStorage, storage_methods::StorageMethods},
         types::GraphError,
     },
-    utils::{items::Edge, label_hash::hash_label},
+    utils::{label_hash::hash_label},
 };
 use heed3::RoTxn;
 use std::{
