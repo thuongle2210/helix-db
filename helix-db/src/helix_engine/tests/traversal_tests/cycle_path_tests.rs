@@ -3,12 +3,11 @@ use std::{sync::Arc};
 use crate::{helix_engine::{
         storage_core::HelixGraphStorage,
         traversal_core::{
-            ops::{g::G, source::{add_e::{AddEAdapter, EdgeType}, add_n::AddNAdapter}, util::paths::ShortestPathAdapter},
+            ops::{g::G, source::{add_e::{AddEAdapter, EdgeType}, add_n::AddNAdapter}, util::paths::{CyclePathAdapter, ShortestPathAdapter}},
             traversal_value::{Traversable, TraversalValue},
         },
     }, props, utils::filterable::Filterable};
 
-use axum::extract::path;
 use tempfile::TempDir;
 
 fn setup_test_db() -> (Arc<HelixGraphStorage>, TempDir) {
@@ -75,7 +74,7 @@ fn test_shortest_path() {
     txn.commit().unwrap();
     let txn = storage.graph_env.read_txn().unwrap();
     let path = G::new_from(Arc::clone(&storage), &txn, vec![node1.clone()])
-        .shortest_path(Some("knows"), None, Some(&node4.id()), Some(&false))
+        .cycle_path(Some("knows"))
         .collect_to::<Vec<_>>();
     assert_eq!(path.len(), 1);
 
@@ -165,9 +164,10 @@ fn test_cycle_path_many_node() {
         .collect_to_obj();
 
     txn.commit().unwrap();
+
     let txn = storage.graph_env.read_txn().unwrap();
-    let path: Vec<TraversalValue> = G::new_from(Arc::clone(&storage), &txn, vec![node1.clone()])
-        .shortest_path(Some("knows"), None, Some(&node1.id()), Some(&true))
+    let path = G::new_from(Arc::clone(&storage), &txn, vec![node1.clone()])
+        .cycle_path(Some("knows"))
         .collect_to::<Vec<_>>();
     println!("final path: {:?}", path);
     assert_eq!(path.len(), 1);
@@ -263,7 +263,7 @@ fn test_cycle_path_2_node() {
     txn.commit().unwrap();
     let txn = storage.graph_env.read_txn().unwrap();
     let path: Vec<TraversalValue> = G::new_from(Arc::clone(&storage), &txn, vec![node1.clone()])
-        .shortest_path(Some("knows"), None, Some(&node1.id()), Some(&true))
+        .cycle_path(Some("knows"))
         .collect_to::<Vec<_>>();
     println!("final path: {:?}", path);
     assert_eq!(path.len(), 1);
@@ -356,7 +356,7 @@ fn test_cycle_path_self_node() {
     txn.commit().unwrap();
     let txn = storage.graph_env.read_txn().unwrap();
     let path: Vec<TraversalValue> = G::new_from(Arc::clone(&storage), &txn, vec![node1.clone()])
-        .shortest_path(Some("knows"), None, Some(&node1.id()), Some(&true))
+        .cycle_path(Some("knows"))
         .collect_to::<Vec<_>>();
     println!("final path: {:?}", path);
     assert_eq!(path.len(), 1);

@@ -16,16 +16,9 @@ use std::{
 pub enum PathType {
     From(u128),
     To(u128),
-    Cycle(bool)
 }
 
-impl Default for PathType {
-    fn default() -> Self {
-        PathType::Cycle(false)
-    }
-}
-
-pub struct ShortestPathIterator<'a, I> {
+pub struct CyclePathIterator<'a, I> {
     iter: I,
     path_type: PathType,
     is_cycle_detection: Option<&'a bool>,
@@ -35,7 +28,7 @@ pub struct ShortestPathIterator<'a, I> {
 }
 
 impl<'a, I: Iterator<Item = Result<TraversalValue, GraphError>>> Iterator
-    for ShortestPathIterator<'a, I>
+    for CyclePathIterator<'a, I>
 {
     type Item = Result<TraversalValue, GraphError>;
 
@@ -44,19 +37,11 @@ impl<'a, I: Iterator<Item = Result<TraversalValue, GraphError>>> Iterator
         println!("hallo");
         match self.iter.next() {
             Some(Ok(TraversalValue::Node(node))) => {
-                let is_cycle_detection: bool = self.is_cycle_detection.map_or(false, |val| *val);
-                println!("path_type: {:?}", self.path_type);
-
-                let (from, to) = if is_cycle_detection {
-                    (node.id, node.id)
-                } else {
-                    match self.path_type {
-                        PathType::From(from) => (from, node.id),
-                        PathType::To(to) => (node.id, to),
-                        PathType::Cycle(true) => (node.id, node.id),
-                        _ => panic!("Invalid path type"),
-                    }
+                let (from, to) = match self.path_type {
+                    PathType::From(from) => (from, node.id),
+                    PathType::To(to) => (node.id, to),
                 };
+                let is_cycle_detection: bool = self.is_cycle_detection.map_or(false, |val| *val);
 
                 let mut queue = VecDeque::with_capacity(32);
                 let mut visited = HashSet::with_capacity(64);
@@ -196,96 +181,6 @@ impl<'a, I: Iterator<Item = Result<TraversalValue, GraphError>> + 'a> ShortestPa
                 storage,
                 txn,
             },
-            storage: Arc::clone(&self.storage),
-            txn: self.txn,
-        }
-    }
-}
-
-
-
-
-pub struct CyclePathIterator<'a, I> {
-    inner: ShortestPathIterator<'a, I>,
-}
-
-impl<'a, I: Iterator<Item = Result<TraversalValue, GraphError>>> Iterator for CyclePathIterator<'a, I> {
-    type Item = Result<TraversalValue, GraphError>;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        // Call ShortestPathIterator's next, but enforce is_cycle_detection = true if you want
-        // You can either forward or override behavior here as needed.
-        self.inner.next()
-    }
-}
-
-impl<'a, I: Iterator<Item = Result<TraversalValue, GraphError>>> CyclePathIterator<'a, I> {
-    pub fn new(
-        iter: I,
-        edge_label: Option<&'a str>,
-        storage: Arc<HelixGraphStorage>,
-        txn: &'a RoTxn<'a>,
-    ) -> Self {
-        CyclePathIterator {
-            inner: ShortestPathIterator {
-                iter,
-                path_type: PathType::Cycle(false), // cycle detection using only from node
-                is_cycle_detection: Some(&true),
-                edge_label,
-                storage,
-                txn,
-            },
-        }
-    }
-}
-
-
-
-pub trait CyclePathAdapter<'a, I>: Iterator<Item = Result<TraversalValue, GraphError>> {
-    /// ShortestPath finds the shortest path between two nodes
-    ///
-    /// # Arguments
-    ///
-    /// * `edge_label` - The label of the edge to use
-    /// * `from` - The starting node
-    /// * `to` - The ending node
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// let node1 = Node { id: 1, label: "Person".to_string(), properties: None };
-    /// let node2 = Node { id: 2, label: "Person".to_string(), properties: None };
-    /// let traversal = G::new(storage, &txn).shortest_path(Some("knows"), Some(&node1.id), Some(&node2.id));
-    /// ```
-    fn cycle_path(
-        self,
-        edge_label: Option<&'a str>,
-    ) -> RoTraversalIterator<'a, CyclePathIterator<'a, I>>
-    where
-        I: 'a;
-}
-
-impl<'a, I: Iterator<Item = Result<TraversalValue, GraphError>> + 'a> CyclePathAdapter<'a, I>
-    for RoTraversalIterator<'a, I>
-{
-    fn cycle_path(
-        self,
-        edge_label: Option<&'a str>,
-    ) -> RoTraversalIterator<'a, CyclePathIterator<'a, I>>
-    where
-        I: 'a,
-    {
-        // let from = from.expect("from node must be specified for cycle detection");
-        let storage = Arc::clone(&self.storage);
-        let txn = self.txn;
-
-        RoTraversalIterator {
-            inner: CyclePathIterator::new(
-                self.inner,
-                edge_label,
-                storage,
-                txn,
-            ),
             storage: Arc::clone(&self.storage),
             txn: self.txn,
         }
