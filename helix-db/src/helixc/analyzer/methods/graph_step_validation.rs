@@ -18,6 +18,7 @@ use crate::{
                 In as GeneratedIn, InE as GeneratedInE, Out as GeneratedOut, OutE as GeneratedOutE,
                 SearchVectorStep, ShortestPath as GeneratedShortestPath, ShouldCollect,
                 Step as GeneratedStep, Traversal as GeneratedTraversal,
+                CyclePath as GeneratedCyclePath
             },
             utils::{GenRef, GeneratedValue, Separator, VecData},
         },
@@ -26,7 +27,6 @@ use crate::{
 };
 use paste::paste;
 use std::collections::HashMap;
-
 /// Check that a graph‑navigation step is allowed for the current element
 /// kind and return the post‑step kind.
 ///
@@ -387,6 +387,16 @@ pub(crate) fn apply_graph_step<'a>(
                     return None;
                 }
             }
+            traversal.should_collect = ShouldCollect::ToVec;
+            Some(Type::Unknown)
+        }
+        (CyclePath(cp), Type::Nodes(_) | Type::Node(_)) => {
+            let type_arg = cp.type_arg.clone().map(GenRef::Literal);
+            traversal.steps.push(Separator::Period(GeneratedStep::CyclePath(
+                GeneratedCyclePath {
+                    label: type_arg
+                }
+            )));
             traversal.should_collect = ShouldCollect::ToVec;
             Some(Type::Unknown)
         }

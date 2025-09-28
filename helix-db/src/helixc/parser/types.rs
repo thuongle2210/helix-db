@@ -692,6 +692,7 @@ pub enum GraphStepType {
     InE(String),
 
     ShortestPath(ShortestPath),
+    CyclePath(CyclePath),
     SearchVector(SearchVector),
 }
 impl GraphStep {
@@ -712,6 +713,12 @@ pub struct ShortestPath {
     pub loc: Loc,
     pub from: Option<IdType>,
     pub to: Option<IdType>,
+    pub type_arg: Option<String>,
+}
+
+#[derive(Debug, Clone)]
+pub struct CyclePath {
+    pub loc: Loc,
     pub type_arg: Option<String>,
 }
 

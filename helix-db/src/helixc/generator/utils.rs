@@ -390,6 +390,7 @@ impl<T: Display> Separator<T> {
     }
 }
 pub fn write_headers() -> String {
+    println!("clgt");
     r#"
 // DEFAULT CODE
 // use helix_db::helix_engine::traversal_core::config::Config;
@@ -427,6 +428,7 @@ use helix_db::{
                 util::{
                     dedup::DedupAdapter, drop::Drop, exist::Exist, filter_mut::FilterMut,
                     filter_ref::FilterRefAdapter, map::MapAdapter, paths::ShortestPathAdapter,
+                    cycle::CyclePathAdapter,
                     props::PropsAdapter, range::RangeAdapter, update::UpdateAdapter, order::OrderByAdapter,
                     aggregate::AggregateAdapter, group_by::GroupByAdapter, count::CountAdapter,
                     },

@@ -22,7 +22,8 @@ use helix_db::{
         util::{
             dedup::DedupAdapter, filter_mut::FilterMut,
             filter_ref::FilterRefAdapter, range::RangeAdapter, update::UpdateAdapter,
-            map::MapAdapter, paths::ShortestPathAdapter, props::PropsAdapter, drop::Drop,
+            map::MapAdapter, paths::{ShortestPathAdapter, CyclePathAdapter},
+            props::PropsAdapter, drop::Drop,
         },
         vectors::{insert::InsertVAdapter, search::SearchVAdapter},
         bm25::search_bm25::SearchBM25Adapter,

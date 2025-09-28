@@ -9,6 +9,8 @@ use crate::helixc::parser::{
 };
 use pest::iterators::Pair;
 
+use super::types::CyclePath;
+
 impl HelixParser {
     /// Parses an order by step
     ///
@@ -420,6 +422,22 @@ impl HelixParser {
                             value: id,
                             loc: pair.loc(),
                         }),
+                        type_arg,
+                    }),
+                }
+            }
+            Rule::cycle_path => {
+                let type_arg = pair.clone().into_inner().fold(
+                    None,
+                    |type_arg, p| match p.as_rule() {
+                        Rule::type_args => Some(p.into_inner().next().unwrap().as_str().to_string()),
+                        _ => type_arg,
+                    },
+                );
+                GraphStep {
+                    loc: pair.loc(),
+                    step: GraphStepType::CyclePath(CyclePath {
+                        loc: pair.loc(),
                         type_arg,
                     }),
                 }

@@ -1,4 +1,4 @@
-use crate::helixc::generator::utils::{VecData, write_properties};
+use crate::helixc::{generator::utils::{write_properties, VecData}};
 
 use super::{
     bool_ops::{BoExp, BoolOp},
@@ -179,6 +179,9 @@ pub enum Step {
     // shortest path
     ShortestPath(ShortestPath),
 
+    // cycle path
+    CyclePath(CyclePath),
+
     // search vector
     SearchVector(SearchVectorStep),
 
@@ -207,6 +210,7 @@ impl Display for Step {
             Step::BoolOp(bool_op) => write!(f, "{bool_op}"),
             Step::Remapping(remapping) => write!(f, "{remapping}"),
             Step::ShortestPath(shortest_path) => write!(f, "{shortest_path}"),
+            Step::CyclePath(cycle_path) => write!(f, "{cycle_path}"),
             Step::SearchVector(search_vector) => write!(f, "{search_vector}"),
             Step::GroupBy(group_by) => write!(f, "{group_by}"),
             Step::AggregateBy(aggregate_by) => write!(f, "{aggregate_by}"),
@@ -233,6 +237,7 @@ impl Debug for Step {
             Step::BoolOp(_) => write!(f, "Bool"),
             Step::Remapping(_) => write!(f, "Remapping"),
             Step::ShortestPath(_) => write!(f, "ShortestPath"),
+            Step::CyclePath(_) => write!(f, "CyclePath"),
             Step::SearchVector(_) => write!(f, "SearchVector"),
             Step::GroupBy(_) => write!(f, "GroupBy"),
             Step::AggregateBy(_) => write!(f, "AggregateBy"),
@@ -381,6 +386,23 @@ impl Display for ShortestPath {
             self.to
                 .clone()
                 .map_or("None".to_string(), |to| format!("Some(&{to})"))
+        )
+    }
+}
+
+
+#[derive(Clone)]
+pub struct CyclePath {
+    pub label: Option<GenRef<String>>
+}
+impl Display for CyclePath {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "cycle_path({})",
+            self.label
+                .clone()
+                .map_or("None".to_string(), |label| format!("Some({label})"))
         )
     }
 }

@@ -26,6 +26,7 @@ pub enum GraphError {
     ConfigFileNotFound,
     SliceLengthError,
     ShortestPathNotFound,
+    CyclePathNotFound,
     EmbeddingError(String),
     ParamNotFound(&'static str),
     IoNeeded(IoContFn),
@@ -60,6 +61,7 @@ impl fmt::Display for GraphError {
             GraphError::SliceLengthError => write!(f, "Slice length error"),
             GraphError::VectorError(msg) => write!(f, "Vector error: {msg}"),
             GraphError::ShortestPathNotFound => write!(f, "Shortest path not found"),
+            GraphError::CyclePathNotFound => write!(f, "Cycle path not found"),
             GraphError::EmbeddingError(msg) => write!(f, "Error while embedding text: {msg}"),
             GraphError::ParamNotFound(param) => write!(f, "Parameter {param} not found in request"),
             GraphError::IoNeeded(_) => {
