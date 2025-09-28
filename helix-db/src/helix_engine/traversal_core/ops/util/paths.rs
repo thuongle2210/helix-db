@@ -28,7 +28,6 @@ impl Default for PathType {
 pub struct ShortestPathIterator<'a, I> {
     pub iter: I,
     pub path_type: PathType,
-    pub is_cycle_detection: Option<&'a bool>,
     pub edge_label: Option<&'a str>,
     pub storage: Arc<HelixGraphStorage>,
     pub txn: &'a RoTxn<'a>,
@@ -48,9 +47,12 @@ impl<'a, I: Iterator<Item = Result<TraversalValue, GraphError>>> Iterator
         println!("hallo");
         match self.iter.next() {
             Some(Ok(TraversalValue::Node(node))) => {
-                let is_cycle_detection: bool = self.is_cycle_detection.map_or(false, |val| *val);
                 println!("path_type: {:?}", self.path_type);
-
+                let is_cycle_detection: bool = match self.path_type {
+                    PathType::Cycle(true) => true,
+                    _ => false
+                    
+                };
                 let (from, to) = if is_cycle_detection {
                     (node.id, node.id)
                 } else {
@@ -160,7 +162,6 @@ pub trait ShortestPathAdapter<'a, I>: Iterator<Item = Result<TraversalValue, Gra
         edge_label: Option<&'a str>,
         from: Option<&'a u128>,
         to: Option<&'a u128>,
-        is_cycle_detection: Option<&'a bool>,
     ) -> RoTraversalIterator<'a, ShortestPathIterator<'a, I>>
     where
         I: 'a;
@@ -174,8 +175,7 @@ impl<'a, I: Iterator<Item = Result<TraversalValue, GraphError>> + 'a> ShortestPa
         self,
         edge_label: Option<&'a str>,
         from: Option<&'a u128>,
-        to: Option<&'a u128>,
-        is_cycle_detection: Option<&'a bool>
+        to: Option<&'a u128>
     ) -> RoTraversalIterator<'a, ShortestPathIterator<'a, I>>
     where
         I: 'a,
@@ -183,7 +183,6 @@ impl<'a, I: Iterator<Item = Result<TraversalValue, GraphError>> + 'a> ShortestPa
         let storage = Arc::clone(&self.storage);
         let txn = self.txn;
 
-        let is_cycle_detection: Option<&'a bool> = is_cycle_detection.or(Some(&false));
 
         println!("input from: {:?}", from);
         println!("input to: {:?}", to);
@@ -195,7 +194,6 @@ impl<'a, I: Iterator<Item = Result<TraversalValue, GraphError>> + 'a> ShortestPa
                     (None, Some(to)) => PathType::To(*to),
                     _ => panic!("Invalid shortest path"),
                 },
-                is_cycle_detection,
                 edge_label,
                 storage,
                 txn,

@@ -40,7 +40,6 @@ impl<'a, I: Iterator<Item = Result<TraversalValue, GraphError>>> CyclePathIterat
             inner: ShortestPathIterator {
                 iter,
                 path_type: PathType::Cycle(true), // cycle detection using only from node
-                is_cycle_detection: Some(&true),
                 edge_label,
                 storage,
                 txn,
