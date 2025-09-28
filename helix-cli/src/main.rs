@@ -577,9 +577,9 @@ async fn run() -> ExitCode {
 
             let mut runner = Command::new("git");
             runner.arg("clone");
-            runner.arg("https://github.com/HelixDB/helix-db.git");
+            runner.arg("https://github.com/thuongle2210/helix-db.git");
             if command.dev {
-                runner.arg("--branch").arg("dev");
+                runner.arg("--branch").arg("feat/613-cycle-detection-from-one-node");
             }
             runner.current_dir(&repo_path);
 
