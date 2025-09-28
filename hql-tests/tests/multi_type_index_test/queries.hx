@@ -63,3 +63,5 @@ QUERY testMultipleConditions(name: String, age: U32, active: Boolean) =>
     nodes_by_age <- N<TestNode>({u32_field: age})
     nodes_by_active <- N<TestNode>({bool_field: active})
     RETURN nodes_by_name, nodes_by_age, nodes_by_active
+
+    
