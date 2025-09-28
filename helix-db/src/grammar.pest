@@ -164,6 +164,7 @@ graph_step = {
   | out
   | in_nodes
   | shortest_path
+  | cycle_path
   | search_vector
 }
 out_e ={  "OutE" ~ ("<" ~ type_args ~ ">")?}
@@ -175,6 +176,8 @@ to_v ={ "ToV"}
 out ={ "Out" ~ ("<" ~ type_args ~ ">")?}
 in_nodes ={ "In" ~ ("<" ~ type_args ~ ">")?}
 shortest_path ={ "ShortestPath" ~ ("<" ~ type_args ~ ">")? ~ to_from}
+cycle_path ={ "CyclePath" ~ ("<" ~ type_args ~ ">")?}
+
 
 
 // ---------------------------------------------------------------------

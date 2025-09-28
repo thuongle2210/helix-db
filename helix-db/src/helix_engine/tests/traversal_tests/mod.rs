@@ -10,3 +10,5 @@ pub mod update_tests;
 pub mod drop_tests;
 pub mod remapping_tests;
 pub mod util_tests;
+pub mod cycle_path_tests;
+
